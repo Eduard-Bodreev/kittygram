@@ -1,0 +1,63 @@
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - kittygram
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    depends_on:
+      - postgres
+    env_file: .env
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    ports:
+      - "8000:8000"
+    networks:
+      - kittygram
+
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - kittygram
+
+  gateway:
+    build: ./nginx
+    container_name: gateway
+    restart: always
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - static:/app/static
+      - media:/app/media
+    networks:
+      - kittygram
+
+volumes:
+  pg_data:
+  static:
+  media:
+
+networks:
+  kittygram:
