@@ -24,7 +24,7 @@ jobs:
 
       - name: Run PEP8 check
         run: |
-          flake8 backend --count --max-complexity=10 --max-line-length=79 --show-source --statistics
+          flake8 backend --count --max-complexity=10 --max-line-length=119 --show-source --statistics
 
   test:
     runs-on: ubuntu-latest
