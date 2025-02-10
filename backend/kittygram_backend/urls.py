@@ -11,7 +11,6 @@ router.register(r"cats", CatViewSet)
 router.register(r"achievements", AchievementViewSet)
 
 
-# ✅ Функция для корневого пути "/"
 def index(request):
     return HttpResponse("Kittygram is running!")
 
