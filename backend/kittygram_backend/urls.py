@@ -26,3 +26,13 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+import logging
+from django.http import HttpResponse
+
+logger = logging.getLogger(__name__)
+
+def index(request):
+    print("Запрос на / дошел до Django!") 
+    logger.info("Запрос на / дошел до Django!")
+    return HttpResponse("Kittygram is running!")
