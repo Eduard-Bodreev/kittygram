@@ -10,7 +10,6 @@ COPY . .
 RUN npm run build
 RUN npm install --global http-server
 
-CMD ["npx", "-y", "http-server", "-p", "8000", "/app/build"]
+RUN mkdir -p /app/collected_static && cp -r /app/build/* /app/collected_static/
 
-RUN npm run build
-RUN cp -r /app/build/* /app/collected_static/
+CMD ["npx", "-y", "http-server", "-p", "8000", "/app/build"]
