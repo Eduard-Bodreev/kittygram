@@ -20,8 +20,8 @@ Used libraries:
 
 ### **1. Clone the repository**
 ```sh
-git clone https://github.com/Eduard-Bodreev/kittygram-final.git
-cd kittygram-final
+git clone https://github.com/Eduard-Bodreev/kittygram.git
+cd kittygram
 ```
 
 ### **2. Set up environment variables**
