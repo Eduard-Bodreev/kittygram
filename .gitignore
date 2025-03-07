@@ -1,2 +1,25 @@
 
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+
+node_modules/
+npm-debug.log
+
+pg_data/
+static/
+media/
+
+.env
+.env.example
+edik.rsa
+*.pem
+
+.vscode/
+.idea/
 .DS_Store
+
+*.log
+__pycache__/
