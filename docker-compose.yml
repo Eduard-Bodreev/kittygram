@@ -1,4 +1,3 @@
-
 services:
   postgres:
     image: postgres:13
@@ -22,13 +21,12 @@ services:
       - postgres
     env_file: .env
     volumes:
-      - static:/app/static
+      - static:/app/collected_static  # Приводим к единому виду
       - media:/app/media
     ports:
       - "8000:8000"
     networks:
       - kittygram
-
 
   frontend:
     build: ./frontend
@@ -47,10 +45,12 @@ services:
       - backend
       - frontend
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
-      - static:/app/static
+      - static:/app/collected_static  # Приводим к единому виду
       - media:/app/media
+      - ./frontend/build:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/templates/default.conf.template  # Монтируем конфиг
     networks:
       - kittygram
 
@@ -61,3 +61,4 @@ volumes:
 
 networks:
   kittygram:
+

@@ -18,6 +18,9 @@ STATIC_ROOT = "/app/collected_static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = "/app/media/"
 
+DATA_UPLOAD_MAX_MEMORY_SIZE =  104857600  # 100 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100 MB
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
