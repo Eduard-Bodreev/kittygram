@@ -23,7 +23,7 @@ services:
       - postgres
     env_file: .env
     volumes:
-      - static:/app/static
+      - static:/app/collected_static
       - media:/app/media
     networks:
       - kittygram
