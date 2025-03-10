@@ -1,5 +1,6 @@
 # KITTYGRAM
 
+
 Kittygram is a delightful web application that serves as a centralized database for all cat enthusiasts. Whether you're a proud cat owner or simply a fan of these furry friends, Kittygram allows users to create and share personalized "cat cards" showcasing the unique details of their feline companions.
 
 Used libraries:  
