@@ -23,7 +23,7 @@ services:
       - postgres
     env_file: .env
     volumes:
-      - static:/app/static
+      - static:/app/collected_static
       - media:/app/media
     networks:
       - kittygram
@@ -47,7 +47,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - static:/app/static
+      - static:/app/collected_static
       - media:/app/media
     networks:
       - kittygram
