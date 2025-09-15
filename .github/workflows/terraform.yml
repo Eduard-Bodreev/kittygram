@@ -17,12 +17,23 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
 
+    # Все terraform-команды выполняем из папки infra/
     defaults:
       run:
         working-directory: infra
 
+    # Глобальные переменные окружения для Terraform и провайдера
     env:
+      # Ключ сервис-аккаунта: провайдер Yandex умеет читать из этой переменной
       YC_SERVICE_ACCOUNT_KEY_FILE: ${{ github.workspace }}/authorized_key.json
+
+      # Пробрасываем значения переменных модуля через TF_VAR_*
+      TF_VAR_cloud_id:   ${{ secrets.YC_CLOUD_ID }}
+      TF_VAR_folder_id:  ${{ secrets.YC_FOLDER_ID }}
+      TF_VAR_zone:       ${{ secrets.YC_ZONE }}
+      TF_VAR_ssh_key:    ${{ secrets.YC_SSH_PUBLIC_KEY }}
+      # На случай, если в variables.tf есть sa_key_file
+      TF_VAR_sa_key_file: ${{ github.workspace }}/authorized_key.json
 
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +43,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Write SA keyfile (raw JSON)
+        # Кладём JSON ключ в корень (путь совпадает с YC_SERVICE_ACCOUNT_KEY_FILE)
         run: |
           cat > "$GITHUB_WORKSPACE/authorized_key.json" <<'JSON'
           ${{ secrets.YC_KEY_JSON }}
