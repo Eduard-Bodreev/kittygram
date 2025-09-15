@@ -1,75 +1,62 @@
-name: Terraform
-
-on:
-  workflow_dispatch:
-    inputs:
-      action:
-        description: Choose Terraform action
-        required: true
-        type: choice
-        options:
-          - plan
-          - apply
-          - destroy
-        default: plan
-
-jobs:
-  terraform:
-    runs-on: ubuntu-latest
-
-    # Все terraform-команды выполняем из папки infra/
-    defaults:
-      run:
-        working-directory: infra
-
-    # Глобальные переменные окружения для Terraform и провайдера
-    env:
-      # Ключ сервис-аккаунта: провайдер Yandex умеет читать из этой переменной
-      YC_SERVICE_ACCOUNT_KEY_FILE: ${{ github.workspace }}/authorized_key.json
-
-      # Пробрасываем значения переменных модуля через TF_VAR_*
-      TF_VAR_cloud_id:   ${{ secrets.YC_CLOUD_ID }}
-      TF_VAR_folder_id:  ${{ secrets.YC_FOLDER_ID }}
-      TF_VAR_zone:       ${{ secrets.YC_ZONE }}
-      TF_VAR_ssh_key:    ${{ secrets.YC_SSH_PUBLIC_KEY }}
-      # На случай, если в variables.tf есть sa_key_file
-      TF_VAR_sa_key_file: ${{ github.workspace }}/authorized_key.json
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-
-      - name: Write SA keyfile (raw JSON)
-        # Кладём JSON ключ в корень (путь совпадает с YC_SERVICE_ACCOUNT_KEY_FILE)
+      - name: Write SA keyfile into infra (raw JSON) + validate
         run: |
-          cat > "$GITHUB_WORKSPACE/authorized_key.json" <<'JSON'
+          mkdir -p infra
+          cat > infra/authorized_key.json <<'JSON'
           ${{ secrets.YC_KEY_JSON }}
           JSON
+          python - <<'PY'
+          import json
+          json.load(open('infra/authorized_key.json','r'))
+          print('Key JSON OK')
+          PY
 
       - name: Terraform Init (S3 backend creds)
+        working-directory: infra
+        env:
+          ACCESS_KEY: ${{ secrets.YC_ACCESS_KEY_ID }}
+          SECRET_KEY: ${{ secrets.YC_SECRET }}
         run: |
           terraform init \
             -backend-config="access_key=$ACCESS_KEY" \
             -backend-config="secret_key=$SECRET_KEY"
-        env:
-          ACCESS_KEY: ${{ secrets.YC_ACCESS_KEY_ID }}
-          SECRET_KEY: ${{ secrets.YC_SECRET }}
 
       - name: Import existing app bucket (idempotent)
+        if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'plan' }}
+        working-directory: infra
         continue-on-error: true
+        env:
+          TF_VAR_cloud_id:  ${{ secrets.YC_CLOUD_ID }}
+          TF_VAR_folder_id: ${{ secrets.YC_FOLDER_ID }}
+          TF_VAR_zone:      ${{ secrets.YC_ZONE }}
+          TF_VAR_ssh_key:   ${{ secrets.YC_SSH_PUBLIC_KEY }}
         run: terraform import yandex_storage_bucket.app_bucket kittygram-app-b1g82bbc15cgo7u2iloc
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
+        working-directory: infra
+        env:
+          TF_VAR_cloud_id:  ${{ secrets.YC_CLOUD_ID }}
+          TF_VAR_folder_id: ${{ secrets.YC_FOLDER_ID }}
+          TF_VAR_zone:      ${{ secrets.YC_ZONE }}
+          TF_VAR_ssh_key:   ${{ secrets.YC_SSH_PUBLIC_KEY }}
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
+        working-directory: infra
+        env:
+          TF_VAR_cloud_id:  ${{ secrets.YC_CLOUD_ID }}
+          TF_VAR_folder_id: ${{ secrets.YC_FOLDER_ID }}
+          TF_VAR_zone:      ${{ secrets.YC_ZONE }}
+          TF_VAR_ssh_key:   ${{ secrets.YC_SSH_PUBLIC_KEY }}
         run: terraform apply -auto-approve
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
+        working-directory: infra
+        env:
+          TF_VAR_cloud_id:  ${{ secrets.YC_CLOUD_ID }}
+          TF_VAR_folder_id: ${{ secrets.YC_FOLDER_ID }}
+          TF_VAR_zone:      ${{ secrets.YC_ZONE }}
+          TF_VAR_ssh_key:   ${{ secrets.YC_SSH_PUBLIC_KEY }}
         run: terraform destroy -auto-approve
