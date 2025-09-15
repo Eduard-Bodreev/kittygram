@@ -1,0 +1,15 @@
+services:
+  backend:
+    env_file:
+      - .env
+    volumes:
+      - kittygram_media:/app/media
+
+  gateway:
+    ports:
+      - "9000:80"
+    volumes:
+      - kittygram_media:/app/media:ro
+
+volumes:
+  kittygram_media:

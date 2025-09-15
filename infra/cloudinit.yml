@@ -1,0 +1,37 @@
+#cloud-config
+ssh_pwauth: no
+
+users:
+  - name: user
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh-authorized-keys:
+      - ${SSH_KEY}
+
+package_update: true
+packages:
+  - curl
+  - ca-certificates
+  - apt-transport-https
+
+write_files:
+  - path: /root/vm_prep.sh
+    permissions: "0755"
+    content: |
+      #!/bin/bash
+      set -euxo pipefail
+
+      curl -fsSL https://get.docker.com | sh
+
+      systemctl enable --now docker
+
+      usermod -aG docker user || true
+
+      apt-get update
+      apt-get install -y docker-compose-plugin || true
+
+      docker --version || true
+      docker compose version || docker-compose --version || true
+
+runcmd:
+  - /root/vm_prep.sh

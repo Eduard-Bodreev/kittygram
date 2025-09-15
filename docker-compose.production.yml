@@ -45,7 +45,7 @@ services:
       - backend
       - frontend
     ports:
-      - "8080:80"
+      - "9000:80"
     volumes:
       - static:/app/collected_static
       - media:/app/media
@@ -59,3 +59,5 @@ volumes:
 
 networks:
   kittygram:
+
+
