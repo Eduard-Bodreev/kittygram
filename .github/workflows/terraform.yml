@@ -4,38 +4,36 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Select the Terraform action'
+        description: Choose Terraform action
         required: true
-        default: 'plan'
         type: choice
-        options: [plan, apply, destroy]
+        options:
+          - plan
+          - apply
+          - destroy
+        default: plan
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
 
-    env:
-      TF_VAR_cloud_id:   ${{ secrets.YC_CLOUD_ID }}
-      TF_VAR_folder_id:  ${{ secrets.YC_FOLDER_ID }}
-      TF_VAR_zone:       ${{ secrets.YC_ZONE }}
-      TF_VAR_ssh_key:    ${{ secrets.YC_SSH_PUBLIC_KEY }}
-
     defaults:
       run:
-        working-directory: ./infra
+        working-directory: infra
+
+    env:
+      YC_SERVICE_ACCOUNT_KEY_FILE: ${{ github.workspace }}/authorized_key.json
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.6
+          terraform_wrapper: false
 
       - name: Write SA keyfile (raw JSON)
         run: |
-          cat > ./authorized_key.json <<'JSON'
+          cat > "$GITHUB_WORKSPACE/authorized_key.json" <<'JSON'
           ${{ secrets.YC_KEY_JSON }}
           JSON
 
@@ -47,6 +45,10 @@ jobs:
         env:
           ACCESS_KEY: ${{ secrets.YC_ACCESS_KEY_ID }}
           SECRET_KEY: ${{ secrets.YC_SECRET }}
+
+      - name: Import existing app bucket (idempotent)
+        continue-on-error: true
+        run: terraform import yandex_storage_bucket.app_bucket kittygram-app-b1g82bbc15cgo7u2iloc
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
